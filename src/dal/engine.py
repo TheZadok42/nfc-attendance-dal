@@ -1,7 +1,11 @@
+import os
+
 import databases
 import sqlalchemy
 
-DATABASE_URL = 'mysql://nfc:Password1@192.168.50.131:3306/nfc'
+password = os.environ.get('NFC_USER_PASSWORD')
+
+DATABASE_URL = f'mysql://nfc:{password}@nfc-database/nfc'
 
 engine = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
