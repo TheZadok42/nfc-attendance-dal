@@ -1,3 +1,3 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi
-ENV MODULE_NAME=app
-COPY ./src /app
+ENV MODULE_NAME=src.app
+COPY ./ /app
