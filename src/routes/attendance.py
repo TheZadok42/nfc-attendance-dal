@@ -1,17 +1,45 @@
 from fastapi import APIRouter
-from sqlalchemy.sql.expression import select
+from sqlalchemy import select
+from src.dal.engine import engine
+from src.dal.models import Attendace, InsertAttendace, User
+from src.dal.tables import attendance, users
 
-from ..dal.engine import engine
-from ..dal.tables import attendance, nfc_cards, user_cards, users
-
-router = APIRouter(tags=['attendance'], prefix='/attendance')
+router = APIRouter()
 
 
-@router.post('', status_code=201)
-async def add_attendance_record(uid: str):
-    get_user_query = select(users.c.id).select_from(nfc_cards).join(
-        user_cards, user_cards.c.card == nfc_cards.c.id).join(
-            users,
-            users.c.id == user_cards.c.user).where(nfc_cards.c.uid == uid)
-    query = attendance.insert().values(user=get_user_query.as_scalar())
-    await engine.execute(query)
+@router.get('/', response_model=list[Attendace])
+async def get_attendances():
+    query = select(attendance, users).select_from(attendance).join(
+        users, users.c.id == attendance.c.user)
+    cursor = await engine.fetch_all(query)
+    results = list()
+    for record in cursor:
+        attendance_model = _parse_raw_attendance_record(record)
+        results.append(attendance_model)
+    return results
+
+
+@router.post('/', response_model=Attendace)
+async def insert_attendance(new_attendance: InsertAttendace):
+    query = attendance.insert()
+    user_subquery = select(users.c.id).where(
+        users.c.nfc_card_uid == new_attendance.nfc_card_uid).scalar_subquery()
+    primary_key = await engine.execute(query, dict(user=user_subquery))
+    new_attendance_query = select(attendance,
+                                  users).select_from(attendance).join(
+                                      users,
+                                      users.c.id == attendance.c.user).where(
+                                          attendance.c.id == primary_key)
+    record = await engine.fetch_one(new_attendance_query)
+    return _parse_raw_attendance_record(record)
+
+
+def _parse_raw_attendance_record(record) -> Attendace:
+    user_model = User(id=record.user,
+                      first_name=record.first_name,
+                      last_name=record.last_name,
+                      nfc_card_uid=record.nfc_card_uid)
+    attendance_model = Attendace(id=record.id,
+                                 insertion_time=record.insertion_time,
+                                 user=user_model)
+    return attendance_model
