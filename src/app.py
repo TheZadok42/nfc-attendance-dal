@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 from .dal.engine import engine
@@ -11,7 +13,7 @@ app.include_router(attendance_router, prefix='/attendace', tags=['attendace'])
 
 @app.get('/')
 async def is_alive():
-    pass
+    return os.environ
 
 
 @app.on_event('startup')
