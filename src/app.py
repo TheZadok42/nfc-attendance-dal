@@ -1,9 +1,16 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .dal.engine import engine
 from .routes import attendance_router, users_router
 
 app = FastAPI(title='Attendance DAL', version='1.0.0')
+
+app.add_middleware(CORSMiddleware,
+                   allow_origins=["*"],
+                   allow_credentails=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"])
 
 app.include_router(users_router, prefix='/user', tags=['user'])
 app.include_router(attendance_router, prefix='/attendace', tags=['attendace'])
