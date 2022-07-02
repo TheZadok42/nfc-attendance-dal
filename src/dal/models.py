@@ -13,14 +13,14 @@ class User(BaseUser):
     id: int
 
 
-class BaseAttendace(BaseModel):
+class BaseAttendance(BaseModel):
     id: int
     insertion_time: datetime
 
 
-class InsertAttendace(BaseModel):
+class InsertAttendance(BaseModel):
     nfc_card_uid: str
 
 
-class Attendace(BaseAttendace):
+class Attendance(BaseAttendance):
     user: User

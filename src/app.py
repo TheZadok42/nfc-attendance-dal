@@ -12,7 +12,9 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"])
 
 app.include_router(users_router, prefix='/user', tags=['user'])
-app.include_router(attendance_router, prefix='/attendace', tags=['attendace'])
+app.include_router(attendance_router,
+                   prefix='/attendance',
+                   tags=['attendance'])
 
 
 @app.get('/')
